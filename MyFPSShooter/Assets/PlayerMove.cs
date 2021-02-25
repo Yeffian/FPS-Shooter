@@ -5,50 +5,39 @@ using UnityEngine;
 public class PlayerMove : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed;
-    public float moveMultiplier;
-    public float rbDrag;
+    public float moveSpeed = 6f;
+    public float jumpForce = 10f;
 
-    float xMovement;
-    float yMovement;
+    [Header("Required Components")]
+    public Transform _camera;
+    public Rigidbody rb;
+    public LayerMask Ground;
 
-    Vector3 moveDir;
+    bool isGrounded;
+    float x;
+    float y;
 
-    Rigidbody rb;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        rb = GetComponent<Rigidbody>();
-        rb.freezeRotation = true;
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        ProcessInput();
-    }
+        //grounding
+        isGrounded = Physics.CheckSphere(new Vector3(transform.position.x, transform.position.y - 1, transform.position.z), 0.4f, Ground);
 
-    void ProcessInput()
-    {
-        xMovement = Input.GetAxisRaw("Horizontal");
-        yMovement = Input.GetAxisRaw("Vertical");
 
-        moveDir = transform.forward * yMovement + transform.right * xMovement;
-    }
+        //facing direction
+        Debug.DrawLine(_camera.position, transform.forward * 2.5f);
 
-    void ControlDrag()
-    {
-        rb.drag = rbDrag;
-    }
+        //moving
+        float x = Input.GetAxisRaw("Horizontal") * moveSpeed;
+        float y = Input.GetAxisRaw("Vertical") * moveSpeed;
 
-    private void FixedUpdate()
-    {
-        MovePlayer();
-    }
+        //jumping
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+            rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);
 
-    void MovePlayer()
-    {
-        rb.AddForce(moveDir.normalized * moveSpeed, ForceMode.Acceleration);
+        //setting movement
+        Vector3 move = transform.right * x + transform.forward * y;
+
+        rb.velocity = new Vector3(move.x, rb.velocity.y, move.z);
     }
 }

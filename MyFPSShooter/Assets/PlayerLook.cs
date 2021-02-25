@@ -4,41 +4,48 @@ using UnityEngine;
 
 public class PlayerLook : MonoBehaviour
 {
-    [SerializeField] private float sensX;
-    [SerializeField] private float sensY;
+    #region Public Variables
+    [Header("Camera")]
+    public Transform player;
+    public Transform parent;
+    public float sensitivity = 10;
+    #endregion
 
-    Camera cam;
+    #region Private Variables
+    float x = 0;
 
-    float mouseX;
-    float mouseY;
+    float y = 0;
+    #endregion
 
-    float multiplier = 0.01f;
-
-    float xRot;
-    float yRot;
-
-    private void Start()
+    #region Monobehaviour Callbacks
+    void Start()
     {
-        cam = Camera.main;
-
-        cam.transform.localRotation = Quaternion.Euler(xRot, 0, 0);
-        transform.rotation = Quaternion.Euler(0, yRot, 0);
-
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
-    private void Update()
+    void Update()
     {
-        ProcessCameraInput();
-    }
+        //input
+        x += -Input.GetAxis("Mouse Y") * sensitivity;
+        y += Input.GetAxis("Mouse X") * sensitivity;
 
-    void ProcessCameraInput()
-    {
-        mouseX = Input.GetAxisRaw("Mouse X");
-        mouseY = Input.GetAxisRaw("Mouse Y");
+        //clamping
+        x = Mathf.Clamp(x, -90, 90);
 
-        yRot += mouseX * sensX * multiplier;
-        xRot -= mouseY * sensY * multiplier;
+        //rotation
+        transform.localRotation = Quaternion.Euler(x, 0, 0);
+        player.transform.localRotation = Quaternion.Euler(0, y, 0);
+        parent.transform.localRotation = Quaternion.Euler(0, y, 0);
+
+        //cursorLocking
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (Cursor.lockState == CursorLockMode.Locked)
+                Cursor.lockState = CursorLockMode.None;
+
+            if (Cursor.lockState == CursorLockMode.None)
+                Cursor.lockState = CursorLockMode.Locked;
+        }
     }
+    #endregion
 }
